@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Gait Asimetri - 12 Parameter</title>
+    <style>
+        * { box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background-color: #f4f6f9; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { color: #1f4e78; text-align: center; font-size: 24px; margin-top: 0; }
+        p.subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; }
+        .card { background: #f8f9fa; border: 1px solid #dcdcdc; border-radius: 8px; padding: 12px; }
+        .card h3 { font-size: 14px; color: #1f4e78; margin: 0 0 10px 0; border-bottom: 2px solid #1f4e78; padding-bottom: 4px; }
+        .row-input { display: flex; gap: 8px; }
+        .row-input div { flex: 1; }
+        label { font-size: 11px; font-weight: bold; color: #555; display: block; margin-bottom: 3px; }
+        input { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        button { width: 100%; padding: 12px; background: #1f4e78; color: white; font-weight: bold; font-size: 16px; border: none; border-radius: 6px; margin-top: 20px; cursor: pointer; }
+        button:hover { background: #143350; }
+        #results { margin-top: 25px; display: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background: #1f4e78; color: white; }
+        .badge { padding: 4px 8px; border-radius: 10px; font-weight: bold; font-size: 11px; display: inline-block; }
+        .sangat-simetris { background: #d4edda; color: #155724; }
+        .asimetri-rendah { background: #fff3cd; color: #856404; }
+        .asimetri-sedang { background: #ffe8d6; color: #a75d00; }
+        .asimetri-tinggi { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Kalkulator Gait Asimetri (12 Parameter)</h1>
+    <p class="subtitle">Isi data Left dan Right di bawah, lalu klik tombol untuk menghitung SI (%) dan Kategorinya.</p>
+    <div class="grid" id="paramGrid"></div>
+    <button onclick="hitung()">Hitung Semua Parameter</button>
+    <div id="results">
+        <h2 style="font-size:18px; color:#1f4e78;">Hasil Analisis</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Left</th>
+                    <th>Right</th>
+                    <th>SI (%)</th>
+                    <th>Kategori</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+<script>
+    const params = [
+        "Kecepatan", "Panjang Tungkai", "vGRF Total", "Ankle Contact Force",
+        "vGRF IC", "vGRF MS", "vGRF TS", "vGRF TO",
+        "Segmental Lean Mass Foot", "Hip Joint Angle", "Knee Joint Angle", "Ankle Joint Angle"
+    ];
+    const grid = document.getElementById('paramGrid');
+    params.forEach((p, i) => {
+        grid.innerHTML += `
+            <div class="card">
+                <h3>${i+1}. ${p}</h3>
+                <div class="row-input">
+                    <div><label>Left (Kiri):</label><input type="number" step="any" id="l_${i}" placeholder="0.00"></div>
+                    <div><label>Right (Kanan):</label><input type="number" step="any" id="r_${i}" placeholder="0.00"></div>
+                </div>
+            </div>`;
+    });
+    function hitung() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        params.forEach((p, i) => {
+            const l = parseFloat(document.getElementById(`l_${i}`).value) || 0;
+            const r = parseFloat(document.getElementById(`r_${i}`).value) || 0;
+            let si = 0, kat = "Data Kosong", badge = "";
+            if (l + r !== 0) {
+                si = Math.abs(2 * (l - r) / (l + r)) * 100;
+                if (si < 2) { kat = "Sangat Simetris (<2%)"; badge = "sangat-simetris"; }
+                else if (si <= 5) { kat = "Asimetri Rendah (2-5%)"; badge = "asimetri-rendah"; }
+                else if (si <= 7) { kat = "Asimetri Sedang (5-7%)"; badge = "asimetri-sedang"; }
+                else { kat = "Asimetri Tinggi (>7%)"; badge = "asimetri-tinggi"; }
+            }
+            tbody.innerHTML += `
+                <tr>
+                    <td style="text-align:left; font-weight:bold;">${p}</td>
+                    <td>${l}</td>
+                    <td>${r}</td>
+                    <td><b>${si.toFixed(2)}%</b></td>
+                    <td><span class="badge ${badge}">${kat}</span></td>
+                </tr>`;
+        });
+        document.getElementById('results').style.display = 'block';
+    }
+</script>
+</body>
+</html>
